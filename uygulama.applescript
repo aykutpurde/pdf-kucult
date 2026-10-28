@@ -3,8 +3,6 @@
 -- Dosya -> yanına "ad (küçük).pdf"; klasör -> yanına "klasör (küçültülmüş)" (alt klasörlerle birlikte).
 -- Orijinal dosyalara asla dokunulmaz.
 
-property levelNames : {"Önerilen — dengeli, gözle fark edilmez (tavsiye)", "Aşırı — en küçük boyut (taramalar siyah-beyaz)", "Az — kayıpsız, görüntülere dokunmaz", "Okuma kopyası — yalnızca okunabilirlik (gri, çift sayfalar bölünür)"}
-property levelKeys : {"onerilen", "asiri", "az", "okuma"}
 
 on clearQuarantine()
 	-- Kullanıcı uygulamayı bir kez "Yine de Aç" ile onayladıktan sonra, içindeki motorun da
@@ -31,13 +29,6 @@ on open droppedItems
 end open
 
 on processItems(theItems)
-	set lvl to choose from list levelNames with title "PDF Küçült" with prompt "Sıkıştırma seviyesi:" & return & "(Metni olmayan taranmış sayfalar otomatik olarak okunur: OCR)" default items {item 1 of levelNames} OK button name "Küçült" cancel button name "Vazgeç"
-	if lvl is false then return
-	set lvlKey to "onerilen"
-	repeat with i from 1 to count of levelNames
-		if item i of levelNames is (item 1 of lvl) then set lvlKey to item i of levelKeys
-	end repeat
-
 	set args to ""
 	set firstPath to ""
 	repeat with f in theItems
@@ -50,10 +41,10 @@ on processItems(theItems)
 	set engineCmd to do shell script "r=" & quoted form of (POSIX path of (path to me) & "Contents/Resources") & "; e=\"$r/motor/$(uname -m)/pdfkucult\"; if [ -x \"$e\" ]; then printf '%q --motor' \"$e\"; else s=\"$HOME/Library/Application Support/PDFKucult\"; printf '%q -I %q' \"$s/venv/bin/python\" \"$r/motor.py\"; fi"
 	set statusFile to do shell script "mktemp -t pdfkucult"
 
-	set cmd to "export PATH=/opt/homebrew/bin:/usr/local/bin:$PATH; " & engineCmd & " -s " & lvlKey & " --durum " & quoted form of statusFile & args & " > " & quoted form of (statusFile & ".log") & " 2>&1 & echo $!"
+	set cmd to "export PATH=/opt/homebrew/bin:/usr/local/bin:$PATH; " & engineCmd & " --durum " & quoted form of statusFile & args & " > " & quoted form of (statusFile & ".log") & " 2>&1 & echo $!"
 	set pid to do shell script cmd
 
-	set progress description to "PDF'ler küçültülüyor…"
+	set progress description to "Akıllı sıkıştırma yapılıyor…"
 	set progress additional description to "Dosyalar taranıyor…"
 	set progress total steps to -1
 	set progress completed steps to 0

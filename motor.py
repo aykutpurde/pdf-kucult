@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""PDF Küçült — görüntü kalitesini koruyarak PDF boyutunu küçülten motor.
+"""PDF Küçült — okunabilirliği koruyarak PDF boyutunu küçülten motor.
+
+Uygulamalar ve Zotero eklentisi tek modla çalışır: "Akıllı sıkıştırma" (iç adı "okuma", en sıkı
+seviye). Diğer seviyeler
+yalnızca komut satırında (-s) test ve karşılaştırma için durur.
 
 Seviyeler:
   az        Kayıpsız: yapı yeniden paketlenir, JPEG'ler kayıpsız optimize edilir,
@@ -8,7 +12,7 @@ Seviyeler:
             JPEG kalitesi 75; renksiz renkli taramalar griye çevrilir.
   asiri     En küçük: metin ağırlıklı gri/renkli taramalar 300 DPI siyah-beyaz
             JBIG2'ye çevrilir, fotoğraflar 150 DPI / kalite 60.
-  okuma     Okuma kopyası: yalnızca okunabilirlik korunur. Bütün görüntüler gri
+  okuma     Akıllı sıkıştırma: yalnızca okunabilirlik korunur. Bütün görüntüler gri
             (en çok 150 DPI), resimli tarama sayfaları da noktalı siyah-beyaz,
             çift sayfa taramalar ikiye bölünüp kenarları kırpılır.
 
@@ -1999,7 +2003,7 @@ def human(n):
 def main(argv=None):
     ap = argparse.ArgumentParser(description="PDF'leri kaliteyi koruyarak küçültür.")
     ap.add_argument("girdiler", nargs="*", default=[], help="PDF dosyaları ve/veya klasörler")
-    ap.add_argument("-s", "--seviye", choices=list(PRESETS), default="onerilen")
+    ap.add_argument("-s", "--seviye", choices=list(PRESETS), default="okuma")
     ap.add_argument("-o", "--cikti", help="tek dosya için çıktı yolu")
     ap.add_argument("-j", "--paralel", type=int, default=0, help="aynı anda işlenecek dosya sayısı")
     ap.add_argument("--json", action="store_true", help="her dosya için bir JSON satırı yaz")
@@ -2009,7 +2013,7 @@ def main(argv=None):
     ap.add_argument("--cop-kutusuna", action="store_true", help="girdileri Çöp Kutusu'na taşı ve çık")
     ap.add_argument("--ocr-yok", action="store_true", help="metinsiz taramalara OCR uygulama")
     ap.add_argument("--bolme-yok", action="store_true",
-                    help="okuma kopyasında çift sayfaları bölme (sayfa numaraları değişmesin)")
+                    help="çift sayfa taramaları bölme (sayfa numaraları değişmesin)")
     ap.add_argument("--isaret-oku", action="store_true", help="girdilerdeki PDF Küçült işaretlerini oku ve çık")
     ap.add_argument("--liste", help="girdileri bu dosyadan (satır satır) oku")
     ap.add_argument("--parmak-izi", action="store_true", help="tekrar tespiti için girdilerin parmak izlerini yaz ve çık")
@@ -2101,7 +2105,7 @@ def main(argv=None):
 
 
 LEVEL_NAMES = {"az": "Az (kayıpsız)", "onerilen": "Önerilen (dengeli)", "asiri": "Aşırı (en küçük)",
-               "okuma": "Okuma kopyası (yalnızca okunabilirlik)"}
+               "okuma": "Akıllı sıkıştırma"}
 
 
 def line_of(r):
@@ -2122,7 +2126,7 @@ def write_report(results, level):
     b = sum(r["once"] for r in ok)
     af = sum(r["sonra"] for r in ok)
     pct = 100 * (1 - af / b) if b else 0
-    lines = [f"{len(results)} PDF işlendi — seviye: {LEVEL_NAMES[level]}",
+    lines = [f"{len(results)} PDF işlendi" + ("" if level == "okuma" else f" — seviye: {LEVEL_NAMES[level]}"),
              f"Toplam: {human(b)} → {human(af)}  (%{pct:.0f} küçüldü, {human(b - af)} kazanıldı)"]
     if warns:
         lines.append(f"{len(warns)} dosyada not var (ayrıntılar raporda).")

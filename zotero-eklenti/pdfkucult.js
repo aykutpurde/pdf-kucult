@@ -15,7 +15,7 @@ PDFKucult = {
 	running: 0,
 	cancelled: false,
 	currentProc: null,
-	status: new Map(),   // libraryKey -> "onerilen" | "asiri" | "okuma" | "az" | "optimum"
+	status: new Map(),   // libraryKey -> seviye ("okuma"; eski kayıtlarda "onerilen" | "asiri" | "az") | "optimum"
 	missing: new Set(),  // bu bilgisayarda dosyası olmayan ekler (son taramaya göre)
 	columnKey: null,
 	gainColumnKey: null,
@@ -26,9 +26,8 @@ PDFKucult = {
 	infoBusy: false,
 	PAGE_WARN_KB: 150,   // bunun üstü incelemeye değer (siyah-beyaz taramada normal 15–100 KB)
 
-	LEVELS: ["onerilen", "asiri", "az", "okuma"],
-	RANK: { az: 0, onerilen: 1, asiri: 2, okuma: 3 },
-	LEVEL_NAMES: { onerilen: "Önerilen", asiri: "Aşırı", az: "Az (kayıpsız)", okuma: "Okuma kopyası" },
+	LEVEL: "okuma",      // tek mod: motorun en sıkı seviyesi
+	RANK: { az: 0, onerilen: 1, asiri: 2, okuma: 3 },  // eski kayıtlar: daha düşük seviyeler yeniden işlenir
 	PREF_AUTO: "extensions.pdfkucult.autoLevel",
 	PREF_OCR: "extensions.pdfkucult.ocr",
 
@@ -208,8 +207,7 @@ PDFKucult = {
 		if (st.every(s => s == "yok")) {
 			return "· Dosya yok";
 		}
-		let best = st.filter(s => this.RANK[s] !== undefined).sort((a, b) => this.RANK[b] - this.RANK[a])[0];
-		return best ? `✓ ${this.LEVEL_NAMES[best]}` : "✓ Zaten küçük";
+		return st.some(s => this.RANK[s] !== undefined) ? "✓ Küçültüldü" : "✓ Zaten küçük";
 	},
 
 	shutdown() {
@@ -236,15 +234,11 @@ PDFKucult = {
 			pluginID: this.id,
 			target: "main/library/item",
 			menus: [{
-				menuType: "submenu",
-				l10nID: "pdfkucult-menu",
+				menuType: "menuitem",
+				l10nID: "pdfkucult-compress",
 				icon,
 				onShowing: (event, context) => context.setVisible(this.mayHavePDFs(context.items)),
-				menus: this.LEVELS.map(level => ({
-					menuType: "menuitem",
-					l10nID: `pdfkucult-level-${level}`,
-					onCommand: (event, context) => this.compressSelection(context.items, level),
-				})),
+				onCommand: (event, context) => this.compressSelection(context.items),
 			}],
 		});
 		let toolsMenu = Zotero.MenuManager.registerMenu({
@@ -257,13 +251,9 @@ PDFKucult = {
 				icon,
 				menus: [
 					{
-						menuType: "submenu",
+						menuType: "menuitem",
 						l10nID: "pdfkucult-library",
-						menus: this.LEVELS.map(level => ({
-							menuType: "menuitem",
-							l10nID: `pdfkucult-level-${level}`,
-							onCommand: () => this.compressLibrary(level),
-						})),
+						onCommand: () => this.compressLibrary(),
 					},
 					{
 						menuType: "menuitem",
@@ -283,15 +273,11 @@ PDFKucult = {
 					},
 					{ menuType: "separator" },
 					{
-						menuType: "submenu",
+						menuType: "menuitem",
 						l10nID: "pdfkucult-auto",
-						menus: ["off", ...this.LEVELS].map(value => ({
-							menuType: "menuitem",
-							l10nID: `pdfkucult-auto-${value}`,
-							onShowing: (event, context) => context.setL10nArgs(
-								JSON.stringify({ sel: this.autoLevel() == value ? "✓ " : "" })),
-							onCommand: () => Zotero.Prefs.set(this.PREF_AUTO, value, true),
-						})),
+						onShowing: (event, context) => context.setL10nArgs(
+							JSON.stringify({ sel: this.autoLevel() != "off" ? "✓ " : "" })),
+						onCommand: () => Zotero.Prefs.set(this.PREF_AUTO, this.autoLevel() == "off" ? this.LEVEL : "off", true),
 					},
 					{
 						menuType: "menuitem",
@@ -316,8 +302,8 @@ PDFKucult = {
 	},
 
 	autoLevel() {
-		let v = Zotero.Prefs.get(this.PREF_AUTO, true);
-		return v == "off" || this.LEVELS.includes(v) ? v : "asiri";
+		// eski sürümlerin seviye değerleri (onerilen/asiri/az) "açık" sayılır
+		return Zotero.Prefs.get(this.PREF_AUTO, true) == "off" ? "off" : this.LEVEL;
 	},
 
 	// ------------------------------------------------------------ öğe seçimi
@@ -344,16 +330,16 @@ PDFKucult = {
 
 	// ------------------------------------------------------------ komutlar
 
-	compressSelection(items, level) {
+	compressSelection(items) {
 		let atts = this.pdfAttachmentsOf(items);
 		if (!atts.length) {
 			this.notify("Seçili öğelerde PDF eki bulunamadı.");
 			return;
 		}
-		this.runBatch(atts, level, `${atts.length} PDF küçültülüyor — ${this.LEVEL_NAMES[level]}`);
+		this.runBatch(atts, this.LEVEL, `Akıllı sıkıştırma — ${atts.length} PDF`);
 	},
 
-	async compressLibrary(level) {
+	async compressLibrary() {
 		let win = Zotero.getMainWindow();
 		let libraryID = win?.ZoteroPane?.getSelectedLibraryID() || Zotero.Libraries.userLibraryID;
 		let library = Zotero.Libraries.get(libraryID);
@@ -379,8 +365,8 @@ PDFKucult = {
 			return;
 		}
 		let ok = Services.prompt.confirm(win, "PDF Küçült",
-			`“${library.name}” kütüphanesindeki ${atts.length} PDF (${this.human(total)}) ` +
-			`“${this.LEVEL_NAMES[level]}” seviyesinde küçültülecek.\n\n` +
+			`“${library.name}” kütüphanesindeki ${atts.length} PDF (${this.human(total)}) akıllı sıkıştırılacak: ` +
+			"metin okunur kalır; görseller gri, taranmış sayfalar siyah-beyaz olur.\n\n" +
 			"Daha önce küçültülmüş dosyalar atlanır. Küçülen her dosyanın büyük orijinali " +
 			"Çöp Kutusu'na taşınır (oradan geri alınabilir). Notlar, açıklamalar ve etiketler " +
 			"aynen kalır.\n\nİşlem uzun sürebilir; Araçlar › PDF Küçült › Durdur ile " +
@@ -389,7 +375,7 @@ PDFKucult = {
 			return;
 		}
 		atts.sort((a, b) => b.size - a.size); // en büyükler önce: kazanç erken gelir
-		this.runBatch(atts.map(x => x.att), level, `Kütüphane küçültülüyor — ${this.LEVEL_NAMES[level]}`);
+		this.runBatch(atts.map(x => x.att), this.LEVEL, "Akıllı sıkıştırma — kütüphane");
 	},
 
 	stop() {
@@ -838,7 +824,7 @@ PDFKucult = {
 				for (let p of pending) {
 					let mk = marks.get(p.path);
 					if (mk) {
-						let level = this.LEVELS.includes(mk.seviye) ? mk.seviye : "onerilen";
+						let level = mk.seviye in this.RANK ? mk.seviye : "onerilen";
 						registry[p.att.libraryKey] = { size: p.size, level, isaret: mk.surum };
 						if (mk.orijinal && mk.orijinal > 0) {
 							registry[p.att.libraryKey].original = mk.orijinal;
@@ -867,10 +853,10 @@ PDFKucult = {
 				+ (this.missing.size ? `\n${this.missing.size} ekin dosyası bu bilgisayarda yok; onlar sayılmadı.` : "")
 				+ "\n\n“Zotero'da göster” bu PDF'lerin makalelerini seçili hale getirir; öğe listesindeki "
 				+ "“Küçültme” sütunundan da görebilirsiniz.",
-				flags, "Hepsini küçült (Önerilen)", "Kapat", "Zotero'da göster", null, {});
+				flags, "Hepsini akıllı sıkıştır", "Kapat", "Zotero'da göster", null, {});
 			if (choice == 0) {
 				todo.sort((a, b) => b.size - a.size);
-				this.runBatch(todo.map(p => p.att), "onerilen", `${todo.length} küçültülmemiş PDF küçültülüyor`);
+				this.runBatch(todo.map(p => p.att), this.LEVEL, `Akıllı sıkıştırma — ${todo.length} küçültülmemiş PDF`);
 			}
 			else if (choice == 2) {
 				let ids = [...new Set(todo.map(p => p.att.parentItemID || p.att.id))];

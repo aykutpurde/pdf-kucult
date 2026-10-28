@@ -11,12 +11,6 @@ import tempfile
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
-LEVELS = [
-    ("onerilen", "Önerilen", "Dengeli; gözle fark edilmez. Çoğu belge için en iyisi."),
-    ("asiri", "Aşırı", "En küçük boyut. Taranmış metin sayfaları siyah-beyaza çevrilir."),
-    ("az", "Az (kayıpsız)", "Görüntülere hiç dokunmaz; yalnızca kayıpsız işlemler."),
-    ("okuma", "Okuma kopyası", "Yalnızca okunabilirlik: her şey gri, resimli sayfalar da siyah-beyaz, çift sayfalar bölünür."),
-]
 NO_WINDOW = 0x08000000
 
 
@@ -36,8 +30,8 @@ class App:
         self.proc = None
         self.status_file = None
         root.title("PDF Küçült")
-        root.geometry("640x560")
-        root.minsize(520, 460)
+        root.geometry("640x460")
+        root.minsize(520, 380)
         try:
             root.iconbitmap(os.path.join(getattr(sys, "_MEIPASS", os.path.dirname(__file__)), "simge.ico"))
         except Exception:
@@ -46,7 +40,8 @@ class App:
         pad = {"padx": 14, "pady": 6}
         ttk.Label(root, text="PDF Küçült", font=("Segoe UI", 16, "bold")).pack(anchor="w", **pad)
         ttk.Label(root, text="PDF dosyalarını veya klasörleri ekleyin (pencereye sürükleyebilirsiniz). "
-                             "Orijinal dosyalara dokunulmaz.", wraplength=580).pack(anchor="w", padx=14)
+                             "Akıllı sıkıştırma metni okunur tutar; görseller gri, taranmış sayfalar "
+                             "siyah-beyaz olur. Orijinal dosyalara dokunulmaz.", wraplength=580).pack(anchor="w", padx=14)
 
         frm = ttk.Frame(root)
         frm.pack(fill="both", expand=True, **pad)
@@ -62,12 +57,6 @@ class App:
         ttk.Button(btns, text="Klasör ekle…", command=self.add_folder).pack(side="left", padx=6)
         ttk.Button(btns, text="Listeyi temizle", command=lambda: self.listbox.delete(0, "end")).pack(side="left")
 
-        lv = ttk.LabelFrame(root, text="Sıkıştırma seviyesi")
-        lv.pack(fill="x", **pad)
-        self.level = tk.StringVar(value="onerilen")
-        for key, name, desc in LEVELS:
-            ttk.Radiobutton(lv, text=f"{name} — {desc}", value=key, variable=self.level).pack(anchor="w", padx=8, pady=2)
-
         self.ocr = tk.BooleanVar(value=True)
         ttk.Checkbutton(root, text="Metni olmayan taranmış sayfaları oku (OCR) — aranabilir ve kopyalanabilir olur",
                         variable=self.ocr).pack(anchor="w", padx=14)
@@ -79,7 +68,7 @@ class App:
 
         act = ttk.Frame(root)
         act.pack(fill="x", padx=14, pady=10)
-        self.go = ttk.Button(act, text="Küçült", command=self.start)
+        self.go = ttk.Button(act, text="Akıllı sıkıştır", command=self.start)
         self.go.pack(side="right")
         self.stop_btn = ttk.Button(act, text="Durdur", command=self.stop, state="disabled")
         self.stop_btn.pack(side="right", padx=6)
@@ -116,7 +105,7 @@ class App:
             return
         fd, self.status_file = tempfile.mkstemp(prefix="pdfkucult-", suffix=".txt")
         os.close(fd)
-        cmd = engine_cmd() + ["-s", self.level.get(), "--durum", self.status_file]
+        cmd = engine_cmd() + ["--durum", self.status_file]
         if not self.ocr.get():
             cmd.append("--ocr-yok")
         cmd += items

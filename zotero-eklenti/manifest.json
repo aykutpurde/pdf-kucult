@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "PDF Küçült",
-  "version": "1.7.1",
+  "version": "1.8.0",
   "description": "Zotero'daki PDF eklerini kaliteyi koruyarak küçültür; büyük orijinal Çöp Kutusu'na / Geri Dönüşüm Kutusu'na taşınır.",
   "author": "Aykut",
   "icons": {

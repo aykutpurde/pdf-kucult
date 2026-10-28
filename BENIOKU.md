@@ -19,7 +19,7 @@ Mac'te "Yine de Aç", Windows'ta "Daha fazla bilgi › Yine de çalıştır" dem
 **Uygulama:** `~/Applications/PDF Küçült.app` (Dock'a sürükleyin)
 
 - PDF dosyalarını veya klasörleri simgenin üzerine bırakın ya da uygulamayı çift tıklayıp seçin.
-- Seviyeyi seçin, ardından ilerleme penceresini izleyin. "Durdur" düğmesiyle istediğiniz an iptal edebilirsiniz.
+- İşlem hemen başlar; ilerleme penceresini izleyin. "Durdur" düğmesiyle istediğiniz an iptal edebilirsiniz.
 - Çıktıların konumu:
   - Bir **dosya** bıraktıysanız, aynı klasörde `ad (küçük).pdf` olarak.
   - Bir **klasör** bıraktıysanız, yanında `klasör (küçültülmüş)` adlı yeni bir klasörde, alt klasör yapısı aynen korunarak.
@@ -31,9 +31,9 @@ Mac'te "Yine de Aç", Windows'ta "Daha fazla bilgi › Yine de çalıştır" dem
 **Kurulum:** Zotero › Tools › Plugins › ⚙ › *Install Plugin From File…* → `PDF Küçült Zotero.xpi`
 
 **Kullanım:**
-- **Seçili öğeler:** Öğelere sağ tıklayın › **PDF Küçült** › seviye. Makale öğesi seçerseniz altındaki PDF ekleri işlenir.
-- **Bütün kütüphane:** Tools › PDF Küçült › *Seçili kütüphanedeki tüm PDF'leri küçült*. Onay ister; en büyük dosyalardan başlar.
-- **Otomatik:** Tools › PDF Küçült › *Yeni eklenen PDF'leri otomatik küçült*. "Find Available PDF" veya sürükle-bırak ile gelen her PDF eklendikten birkaç saniye sonra küçültülür. Varsayılan seviye: Aşırı.
+- **Seçili öğeler:** Öğelere sağ tıklayın › **Akıllı sıkıştır (PDF Küçült)**. Makale öğesi seçerseniz altındaki PDF ekleri işlenir.
+- **Bütün kütüphane:** Tools › PDF Küçült › *Seçili kütüphanedeki tüm PDF'leri akıllı sıkıştır*. Onay ister; en büyük dosyalardan başlar.
+- **Otomatik:** Tools › PDF Küçült › *Yeni eklenen PDF'leri otomatik akıllı sıkıştır*. "Find Available PDF" veya sürükle-bırak ile gelen her PDF eklendikten birkaç saniye sonra küçültülür. Varsayılan olarak açık.
 - **KB/sayfa sütunu:** Öğe listesinde sütun başlığına sağ tıklayıp *KB/sayfa*'yı açın. Her PDF'in sayfa başına boyutu görünür; 150 KB'ın üstü ⚠ ile işaretlenir ve incelemeye değer (siyah-beyaz taramada normal 15–100 KB, dijital metinde 5–80 KB). Sütuna tıklayarak en şişkin dosyaları üste sıralayabilirsiniz. Sayfa sayısı Zotero'nun tam metin dizininden okunur; dizinlenmemiş PDF'lerde boş kalır.
 
 **Nasıl çalışır:**
@@ -45,27 +45,37 @@ Mac'te "Yine de Aç", Windows'ta "Daha fazla bilgi › Yine de çalıştır" dem
 
 Eklenti motoru `~/Library/Application Support/PDFKucult/motor.py` konumundan çalıştırır; motoru `kur.sh` günceller.
 
-## Seviyeler
+## Akıllı sıkıştırma
 
-| Seviye | Ne yapar | Ne zaman |
-|---|---|---|
-| **Önerilen** | 200 DPI'dan yüksek görüntüleri 200 DPI'ya indirir, JPEG kalitesi 75. Baskı için hazırlanmış CMYK görselleri renk profiliyle RGB'ye çevirir; küçük resimlere bağlı dev (200 KB üstü) CMYK baskı profillerini standart CMYK ile değiştirir, yalnızca PDF/X baskı hedefi olarak gömülmüş olanları atar. CMYK JPEG 2000 görselleri de RGB JPEG'e çevirir. 450 DPI'dan yüksek kayıpsız grafikleri (şema, çizelge) kayıpsız olarak 300 DPI'ya indirir. | Varsayılan; gözle fark edilmez |
-| **Aşırı** | Metin ağırlıklı taramaları (fotoğraf makinesiyle çekilmiş gri sayfalar dahil) 300 DPI siyah-beyaz JBIG2'ye çevirir; 320 DPI'dan yüksek siyah-beyaz taramaları 300 DPI'ya indirir. Fotoğrafları 150 DPI'ya indirir, JPEG kalitesi 60. "Yazdır > PDF" ile metni çizim olarak kaydedilmiş sayfaları siyah-beyaz taramaya çevirip OCR ile aranabilir yapar. | Taranmış kitaplar; en küçük boyut |
-| **Az** | Yalnızca kayıpsız işlemler; görüntülere dokunulmaz. | Görsel sanat, harita, arşiv kopyası |
-| **Okuma kopyası** | Yalnızca okunabilirliği korur. Aşırı'nın yaptıklarına ek olarak: bütün görüntüler (grafikler dahil) gri, fotoğraflar en çok 150 DPI / kalite 50; resimli tarama sayfaları da siyah-beyaz olur (yazılar keskin, resimler gazete baskısı gibi noktalı). Çift sayfa taramalar (fotokopi, kitap tarayıcısı) ikiye bölünür, siyah kenar bantları kırpılır; OCR katmanı ve yer imleri korunur. Not/vurgu içeren PDF'lerde sayfalar bölünmez. | Yalnızca okunacak taramalar, arşivde yer açmak |
+Tek bir mod vardır: **akıllı sıkıştırma**. En çok küçültmeyi hedefler. Ölçüt: metin okunabilir kalsın, sayfa sayısı ve
+künye belli olsun. Bunun için:
 
-Her seviyede, kayıpsız olarak:
+- **Taramalar:** Metin ağırlıklı taranmış sayfalar (fotoğraf makinesiyle çekilmiş gri sayfalar dahil)
+  300 DPI siyah-beyaz JBIG2'ye çevrilir. Resimli tarama sayfaları da siyah-beyaz olur: yazılar
+  keskin, resimler gazete baskısı gibi noktalı. 320 DPI'dan yüksek siyah-beyaz taramalar 300 DPI'ya iner.
+- **Çift sayfa taramalar** (fotokopi, kitap tarayıcısı) kitap sırtından ikiye bölünür, siyah kenar
+  bantları kırpılır; OCR katmanı ve yer imleri korunur. Not/vurgu içeren PDF'lerde sayfalar bölünmez.
+- **Görseller gri olur:** fotoğraflar en çok 150 DPI / JPEG kalitesi 50; grafikler kayıpsız gri,
+  450 DPI üstündekiler 300 DPI'ya iner. Baskı için CMYK görseller (JPEG 2000 dahil) dönüştürülür.
+- **"Yazdır > PDF"** ile metni çizim olarak kaydedilmiş sayfalar siyah-beyaz taramaya çevrilip
+  OCR ile aranabilir yapılır.
+- **Dev baskı renk profilleri** (200 KB üstü CMYK) standart CMYK ile değiştirilir ya da yalnızca
+  PDF/X baskı hedefiyse atılır.
+
+> Görseller gri, taranmış sayfalar siyah-beyaz olur. Renk gerekiyorsa orijinali saklayın: uygulama orijinale
+> hiç dokunmaz; Zotero eklentisi orijinali Çöp Kutusu'na taşır, oradan geri alınabilir.
+
+Ayrıca, kayıpsız olarak:
 - Gömülü fontlar yalnızca belgede kullanılan harflere indirilir. Word'den çıkan makalelerde en büyük kazanç buradan gelir.
-  - **Az:** yalnızca tam gömülmüş fontlar küçültülür.
-  - **Önerilen ve Aşırı:** tüm TrueType fontlar küçültülür; ekran ipucu (hinting) verisi, PDF'te kullanılmayan dizgi tabloları ve gömülü bitmap'ler de atılır.
+  - Tüm TrueType fontlar küçültülür; ekran ipucu (hinting) verisi, PDF'te kullanılmayan dizgi tabloları ve gömülü bitmap'ler de atılır.
   - Harf numaraları korunduğu için sayfa içeriği, metin, bağlantılar ve etiketler değişmez.
 - Tekrar eden fontlar ve görüntüler birleştirilir.
-- Siyah-beyaz taramalar kayıpsız JBIG2'ye çevrilir. (Önerilen ve Aşırı: tarama benekleri ve harf kenarındaki tek piksellik pürüzler de silinir; noktalı resim sayfalarına dokunulmaz.)
+- Siyah-beyaz taramalar kayıpsız JBIG2'ye çevrilir. Tarama benekleri ve harf kenarındaki tek piksellik pürüzler silinir; noktalı resim sayfalarına dokunulmaz.
 - iLovePDF/ABBYY gibi programların JPEG'in üstüne ikinci bir sıkıştırma eklediği görüntüler de işlenir.
 - Sayfayı "piksel/72" boyutunda (55-90 cm) kaydeden tarama servislerinin dosyalarında çözünürlük A4 sayfa varsayılarak hesaplanır; aksi halde bu taramalar düşük çözünürlüklü sanılıp küçültülmüyordu.
 - JPEG'ler mozjpeg ile kayıpsız yeniden paketlenir (~%5).
-- Paletli (Indexed) ve JPEG 2000 fotoğraflar JPEG'e çevrilir; az renkli grafikler kayıpsız kalır. (Önerilen ve Aşırı)
-- Çizim olarak kaydedilmiş metnin koordinatları gözle fark edilmeyecek hassasiyete (0,01) yuvarlanır; sayfa birebir kontrol edilir. (Önerilen ve Aşırı)
+- Paletli (Indexed) ve JPEG 2000 fotoğraflar JPEG'e çevrilir; az renkli grafikler kayıpsız kalır.
+- Çizim olarak kaydedilmiş metnin koordinatları gözle fark edilmeyecek hassasiyete (0,01) yuvarlanır; sayfa birebir kontrol edilir.
 - Metni olmayan taranmış sayfalara OCR ile görünmez metin katmanı eklenir (Türkçe, İngilizce, Almanca, Fransızca).
 - Dosya yapısı yeniden paketlenir.
 
@@ -82,10 +92,11 @@ Her seviyede, kayıpsız olarak:
 ## Komut satırı
 
 ```bash
-~/Library/Application\ Support/PDFKucult/venv/bin/python motor.py -s asiri ~/Kitaplar/
+~/Library/Application\ Support/PDFKucult/venv/bin/python motor.py ~/Kitaplar/
 ```
 
-Seviyeler: `az`, `onerilen`, `asiri`, `okuma`. `--ocr-yok` metin tanımayı, `--bolme-yok` okuma kopyasında çift sayfa bölmeyi kapatır (sayfa numaraları değişmesin).
+`--ocr-yok` metin tanımayı, `--bolme-yok` çift sayfa bölmeyi kapatır (sayfa numaraları değişmesin).
+Test ve karşılaştırma için eski seviyeler hâlâ seçilebilir: `-s az|onerilen|asiri|okuma` (varsayılan `okuma`).
 
 ## Kurulum / güncelleme
 
