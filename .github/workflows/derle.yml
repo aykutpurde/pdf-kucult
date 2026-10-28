@@ -1,0 +1,148 @@
+name: Derle ve test et
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  mac:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14        # Apple Silicon (M serisi)
+            arch: arm64
+          - runner: macos-15-intel  # Intel
+            arch: x86_64
+    runs-on: ${{ matrix.runner }}
+    env:
+      OUT: ${{ github.workspace }}/derleme-mac
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Homebrew araçları
+        run: brew install jbig2enc jpeg-turbo tesseract
+      - name: Motoru paketle
+        run: PY=python ./paketleme/mac_motor.sh
+      - name: Örnek PDF'lerle test (Homebrew'suz ortamda)
+        run: |
+          python -m pip install -q -r paketleme/gereksinimler.txt
+          python testler/ornek_uret.py ornekler
+          env -i HOME="$HOME" PATH=/usr/bin:/bin TMPDIR="$RUNNER_TEMP" "$(which python)" testler/calistir.py \
+            "$OUT/${{ matrix.arch }}/dist/pdfkucult/pdfkucult" --motor -- ornekler test-cikti
+      - name: Motoru sakla
+        run: tar -C "$OUT/${{ matrix.arch }}/dist" -czf motor-mac-${{ matrix.arch }}.tgz pdfkucult
+      - uses: actions/upload-artifact@v4
+        with:
+          name: motor-mac-${{ matrix.arch }}
+          path: motor-mac-${{ matrix.arch }}.tgz
+
+  windows:
+    runs-on: windows-latest
+    env:
+      OUT: ${{ github.workspace }}\derleme-win
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: jbig2 ve jpegtran (MSYS2, kaynaktan)
+        shell: pwsh
+        env:
+          MSYSTEM: MINGW64
+          CHERE_INVOKING: "1"
+        run: C:\msys64\usr\bin\bash.exe -l paketleme/win_jbig2.sh
+      - name: Uygulamayı paketle
+        shell: pwsh
+        run: .\paketleme\win_derle.ps1
+      - name: Zotero eklentisi
+        run: python paketleme/xpi_yap.py "PDF Küçült Zotero.xpi"
+      - name: Kurulum dosyası (Inno Setup)
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" paketleme\kurulum.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC başarısız" }
+      - name: Sessiz kurulum ve kurulu programla test
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath "derleme-win\kurulum\PDF-Kucult-Kurulum.exe" -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "kurulum başarısız: $($p.ExitCode)" }
+          $exe = Join-Path $env:LOCALAPPDATA "Programs\PDF Kucult\PDF Kucult.exe"
+          if (-not (Test-Path $exe)) { throw "kurulu program yok: $exe" }
+          $sendto = Join-Path $env:APPDATA "Microsoft\Windows\SendTo\PDF Küçült.lnk"
+          if (-not (Test-Path $sendto)) { throw "Gönder menüsü kısayolu yok" }
+          $desk = [Environment]::GetFolderPath("Desktop")
+          if (-not (Test-Path (Join-Path $desk "PDF Küçült.lnk"))) { throw "masaüstü kısayolu yok" }
+          $bin = Join-Path $env:LOCALAPPDATA "Programs\PDF Kucult\bin"
+          foreach ($t in @("jbig2.exe", "tesseract.exe")) {
+            $pr = Start-Process -FilePath (Join-Path $bin $t) -ArgumentList "-h" -PassThru -NoNewWindow -RedirectStandardError "$env:RUNNER_TEMP\$t.err"
+            if (-not $pr.WaitForExit(20000)) { $pr.Kill(); throw "$t takıldı (eksik DLL?)" }
+            Write-Host "$t çalışıyor (çıkış $($pr.ExitCode))"
+          }
+          python -m pip install -q -r paketleme/gereksinimler.txt
+          python testler/ornek_uret.py ornekler
+          python testler/calistir.py $exe --motor -- ornekler test-cikti
+          if ($LASTEXITCODE -ne 0) { throw "testler başarısız" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: |
+            derleme-win/kurulum/PDF-Kucult-Kurulum.exe
+            PDF Küçült Zotero.xpi
+
+  paket:
+    needs: [mac, windows]
+    runs-on: macos-14
+    permissions:
+      contents: write   # v* etiketinde GitHub sürümü oluşturmak için
+    env:
+      OUT: ${{ github.workspace }}/derleme-mac
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          path: parcalar
+      - name: Evrensel Mac uygulaması ve .dmg
+        run: |
+          python -m pip install -q pillow
+          mkdir -p motorlar/arm64 motorlar/x86_64
+          tar -C motorlar/arm64 -xzf parcalar/motor-mac-arm64/motor-mac-arm64.tgz
+          tar -C motorlar/x86_64 -xzf parcalar/motor-mac-x86_64/motor-mac-x86_64.tgz
+          PY=python ./paketleme/mac_uygulama.sh motorlar/arm64/pdfkucult motorlar/x86_64/pdfkucult
+          mkdir -p dagitim
+          cp "$OUT/PDF-Kucult-Mac.dmg" dagitim/
+          cp parcalar/windows/derleme-win/kurulum/PDF-Kucult-Kurulum.exe dagitim/
+          cp "parcalar/windows/PDF Küçült Zotero.xpi" dagitim/
+          cp "Kurulum Rehberi.html" dagitim/
+          ls -la dagitim
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PDF-Kucult-dagitim
+          path: dagitim
+      - name: GitHub sürümü (v* etiketi)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Zotero, eklenti güncellemelerini en son sürümdeki updates.json'dan bulur
+          ver=$(python -c "import json; print(json.load(open('zotero-eklenti/manifest.json'))['version'])")
+          [ "v$ver" = "$GITHUB_REF_NAME" ] || { echo "etiket $GITHUB_REF_NAME, eklenti sürümü $ver: aynı olmalı"; exit 1; }
+          cd dagitim
+          mv "PDF Küçült Zotero.xpi" pdf-kucult-zotero.xpi
+          mv "Kurulum Rehberi.html" Kurulum-Rehberi.html
+          python - <<PY
+          import json
+          link = "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/pdf-kucult-zotero.xpi"
+          json.dump({"addons": {"pdfkucult@aykut.local": {"updates": [{"version": "$ver", "update_link": link,
+                     "applications": {"zotero": {"strict_min_version": "7.0"}}}]}}}, open("updates.json", "w"), indent=2)
+          PY
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --title "PDF Küçült $GITHUB_REF_NAME" \
+            --notes "Mac: PDF-Kucult-Mac.dmg · Windows: PDF-Kucult-Kurulum.exe · Zotero eklentisi: pdf-kucult-zotero.xpi. Kurulum adımları için Kurulum-Rehberi.html dosyasını açın." \
+            PDF-Kucult-Mac.dmg PDF-Kucult-Kurulum.exe pdf-kucult-zotero.xpi updates.json Kurulum-Rehberi.html

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF Küçült — Kurulum Rehberi</title>
+<style>
+  :root { --bg:#fbfaf8; --fg:#1f2328; --muted:#5b6470; --line:#e4e1dc; --card:#ffffff; --accent:#c8312f; --note:#fff6e5; --noteline:#f0c76e; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#16181b; --fg:#e8e6e3; --muted:#a3aab3; --line:#2c3036; --card:#1e2125; --accent:#ff6b62; --note:#2a2416; --noteline:#8a6d2b; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:17px/1.6 -apple-system, "Segoe UI", system-ui, sans-serif; }
+  main { max-width:760px; margin:0 auto; padding:40px 20px 80px; }
+  h1 { font-size:2rem; margin:0 0 .3em; }
+  h1 span { color:var(--accent); }
+  h2 { font-size:1.35rem; margin:2.2em 0 .6em; padding-bottom:.3em; border-bottom:1px solid var(--line); }
+  h3 { font-size:1.08rem; margin:1.6em 0 .4em; }
+  p.lead { color:var(--muted); font-size:1.08rem; margin-top:0; }
+  ol, ul { padding-left:1.4em; } li { margin:.45em 0; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 22px; margin:14px 0; }
+  .note { background:var(--note); border:1px solid var(--noteline); border-radius:10px; padding:12px 16px; margin:14px 0; }
+  b.k { background:var(--card); border:1px solid var(--line); border-radius:6px; padding:1px 7px; font-weight:600; white-space:nowrap; }
+  table { border-collapse:collapse; width:100%; margin:10px 0; font-size:.96rem; }
+  th, td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; }
+  nav a { color:var(--accent); margin-right:14px; text-decoration:none; font-weight:600; }
+  code { font-size:.92em; }
+</style>
+</head>
+<body>
+<main>
+<h1>PDF <span>Küçült</span></h1>
+<p class="lead">PDF dosyalarını görüntü kalitesini koruyarak küçülten ücretsiz program. Dosyalarınız hiçbir sunucuya gönderilmez; her şey kendi bilgisayarınızda olur. Orijinal dosyalarınıza dokunulmaz.</p>
+<p><b>Gereksinimler:</b> Mac'te <b>macOS 13 Ventura</b> veya daha yenisi (M1/M2/M3/M4 işlemcili Mac'lerde <b>macOS 14 Sonoma</b> veya daha yenisi). Windows'ta <b>Windows 10 veya 11</b> (64 bit).</p>
+<nav><a href="#mac">Mac kurulumu</a><a href="#win">Windows kurulumu</a><a href="#kullanim">Kullanım</a><a href="#zotero">Zotero eklentisi</a></nav>
+
+<h2 id="mac">Mac'e kurulum</h2>
+<ol>
+  <li><b>PDF-Kucult-Mac.dmg</b> dosyasına çift tıklayın. Bir pencere açılır.</li>
+  <li>Penceredeki <b>PDF Küçült</b> simgesini, yanındaki <b>Uygulamalar</b> klasörünün üzerine sürükleyin.</li>
+  <li>Finder'da <b>Uygulamalar</b> klasörünü açın ve <b>PDF Küçült</b>'e çift tıklayın.</li>
+</ol>
+<div class="note">
+  <b>İlk açılışta bir uyarı çıkacak — bu normal.</b> Program ücretsiz olduğu için Apple'ın ücretli imzasını taşımıyor. Yalnızca bir kez şunu yapın:
+  <ol>
+    <li>Uyarıda <b class="k">Bitti</b> (ya da <b class="k">Tamam</b>) düğmesine basın.</li>
+    <li>Ekranın sol üstündeki  menüsünden <b>Sistem Ayarları</b>'nı açın, soldan <b>Gizlilik ve Güvenlik</b>'i seçin.</li>
+    <li>Sayfayı aşağı kaydırın: <i>“PDF Küçült” engellendi</i> yazısının yanındaki <b class="k">Yine de Aç</b> düğmesine basın.</li>
+    <li>Parolanızı girin ve açılan pencerede tekrar <b class="k">Aç</b>'a basın.</li>
+  </ol>
+  Bundan sonra program her zaman doğrudan açılır.
+</div>
+<p>İpucu: Program açıkken Dock'taki simgesine sağ tıklayıp <b>Seçenekler › Dock'ta Tut</b>'u seçerseniz, PDF'leri doğrudan bu simgenin üzerine bırakabilirsiniz.</p>
+
+<h2 id="win">Windows'a kurulum</h2>
+<ol>
+  <li><b>PDF-Kucult-Kurulum.exe</b> dosyasına çift tıklayın.</li>
+  <li>Mavi bir <i>“Windows bilgisayarınızı korudu”</i> penceresi çıkarsa: <b class="k">Ek bilgi</b> yazısına, sonra <b class="k">Yine de çalıştır</b> düğmesine basın. (Program ücretsiz olduğu için Microsoft imzası taşımıyor; bu uyarı yalnızca kurulumda çıkar.)</li>
+  <li><b class="k">Kur</b>'a basın. Yönetici parolası gerekmez.</li>
+</ol>
+<p>Kurulumdan sonra masaüstünüzde <b>PDF Küçült</b> simgesi olur.</p>
+
+<h2 id="kullanim">Kullanım</h2>
+<div class="card">
+  <h3 style="margin-top:0">Üç yoldan biri</h3>
+  <ul>
+    <li><b>Sürükle-bırak:</b> PDF dosyalarını ya da bir klasörü <b>PDF Küçült</b> simgesinin üzerine bırakın.</li>
+    <li><b>Windows'ta sağ tık:</b> PDF'lere sağ tıklayın › <b>Gönder</b> › <b>PDF Küçült</b>. (Windows 11'de önce <i>Daha fazla seçenek göster</i>.)</li>
+    <li><b>Çift tıklama:</b> Programı açın ve dosya ya da klasör seçin.</li>
+  </ul>
+  Sonra sıkıştırma seviyesini seçin ve <b>Küçült</b>'e basın.
+</div>
+<table>
+  <tr><th>Seviye</th><th>Ne yapar</th><th>Ne zaman</th></tr>
+  <tr><td><b>Önerilen</b></td><td>Gereksiz yüksek çözünürlüklü görselleri ve fontları küçültür. Fark gözle görülmez.</td><td>Çoğu belge için</td></tr>
+  <tr><td><b>Aşırı</b></td><td>En küçük boyut. Taranmış metin sayfaları siyah-beyaza çevrilir; fotoğraflar biraz yumuşar. “Yazdır › PDF” ile oluşturulmuş, metni aranamayan belgeler çok küçülür ve aranabilir hale gelir.</td><td>Taranmış kitaplar, “Yazdır › PDF” belgeleri</td></tr>
+  <tr><td><b>Az</b></td><td>Görsellere hiç dokunmaz; yalnızca kayıpsız işlemler.</td><td>Harita, sanat eseri, arşiv kopyası</td></tr>
+</table>
+<p><b>Sonuçlar nereye kaydedilir?</b> Bir dosya küçülttüyseniz aynı klasörde <code>ad (küçük).pdf</code> olarak; bir klasör küçülttüyseniz yanında <code>klasör (küçültülmüş)</code> adlı yeni bir klasörde. Orijinallerinize dokunulmaz: sonuçtan memnunsanız onları kendiniz silebilirsiniz.</p>
+<p><b>Taranmış belgeler aranabilir olur (OCR):</b> Metni olmayan taranmış sayfalar Türkçe, İngilizce, Almanca ve Fransızca olarak okunur; sayfanın görünümü değişmez ama içinde arama yapabilir, metni kopyalayabilirsiniz. Sayfa başına 1–3 saniye sürer. İstemezseniz Windows'ta “OCR” kutusunun işaretini kaldırın.</p>
+<p>Program her dosyayı küçülttükten sonra sayfaları orijinalle karşılaştırır; bir sorun görürse o kısma dokunmaz. Metin, arama, yer imleri ve bağlantılar korunur. E-imzalı veya parolalı PDF'lere dokunulmaz.</p>
+
+<h2 id="zotero">Zotero eklentisi (isteğe bağlı)</h2>
+<p>Zotero kullanıyorsanız, kütüphanenizdeki PDF'leri doğrudan Zotero içinde küçültebilirsiniz. Büyük orijinal Çöp Kutusu'na (Windows'ta Geri Dönüşüm Kutusu'na) gider; notlarınız, vurgularınız ve etiketleriniz aynen kalır.</p>
+<ol>
+  <li>Önce yukarıdaki gibi <b>PDF Küçült programını kurun ve bir kez açın.</b></li>
+  <li>Eklenti dosyasını bulun: <b>Mac'te</b> .dmg penceresindeki <b>PDF Küçült Zotero.xpi</b> (önce Masaüstüne sürükleyin); <b>Windows'ta</b> Başlat menüsü › <b>PDF Küçült</b> › <b>Zotero eklentisi klasörü</b>.</li>
+  <li>Zotero'da üst menüden <b>Tools › Plugins</b> (Türkçe: <b>Araçlar › Eklentiler</b>) açın.</li>
+  <li>Sağ üstteki ⚙ simgesine tıklayıp <b>Install Plugin From File…</b> seçin ve <b>PDF Küçült Zotero.xpi</b> dosyasını seçin.</li>
+</ol>
+<div class="card">
+  <ul>
+    <li><b>Seçili makaleler:</b> Makalelere sağ tıklayın › <b>PDF Küçült</b> › seviye.</li>
+    <li><b>Otomatik:</b> “Find Available PDF” ile ya da sürükleyerek eklediğiniz her PDF birkaç saniye içinde kendiliğinden küçülür. Ayarı: <b>Tools › PDF Küçült › Yeni eklenen PDF'leri otomatik küçült</b>.</li>
+    <li><b>Taranmış makaleler:</b> Metni olmayan PDF'ler otomatik olarak okunur (OCR) ve Zotero'da tam metin aramasında bulunur. Ayarı: <b>Tools › PDF Küçült › Metinsiz taramalara metin tanıma (OCR) uygula</b>.</li>
+    <li><b>Bütün kütüphane:</b> <b>Tools › PDF Küçült › Seçili kütüphanedeki tüm PDF'leri küçült</b>. İstediğiniz an <b>Durdur</b> ile durdurabilirsiniz.</li>
+  </ul>
+</div>
+<p class="note">Disk alanı ancak Çöp Kutusu / Geri Dönüşüm Kutusu boşaltıldığında açılır. Birkaç makaleyi açıp sonuçtan memnun kaldıktan sonra boşaltın.</p>
+
+<h2>Kaldırma</h2>
+<p><b>Mac:</b> Uygulamalar klasöründeki <b>PDF Küçült</b>'ü Çöp Kutusu'na sürükleyin. <b>Windows:</b> Ayarlar › Uygulamalar › <b>PDF Küçült</b> › Kaldır. Zotero eklentisi: Tools › Plugins › PDF Küçült › Remove.</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,9 @@
+# Mac: geniş uyumluluk için sabit pikepdf (M serisi: macOS 14+, Intel: macOS 13+)
+pikepdf==9.11.0; sys_platform == "darwin"
+pikepdf; sys_platform != "darwin"
+pillow
+numpy
+fonttools
+pypdfium2
+send2trash
+mozjpeg-lossless-optimization
