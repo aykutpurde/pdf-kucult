@@ -4,7 +4,8 @@ var PDFKucult;
 
 async function startup({ id, version, rootURI }, reason) {
 	await Zotero.initializationPromise;
-	Services.scriptloader.loadSubScript(rootURI + "pdfkucult.js");
+	// Önbelleği atla: aksi halde güncellemeden sonra eski sürümün kodu çalışmaya devam edebiliyor.
+	Services.scriptloader.loadSubScriptWithOptions(rootURI + "pdfkucult.js", { ignoreCache: true });
 	PDFKucult.init({ id, version, rootURI });
 	for (let win of Zotero.getMainWindows()) {
 		onMainWindowLoad({ window: win });
