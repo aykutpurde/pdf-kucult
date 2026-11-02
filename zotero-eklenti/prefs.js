@@ -3,3 +3,5 @@
 pref("extensions.pdfkucult.autoLevel", "off");
 // Metni olmayan taranmış sayfalara görünmez metin katmanı (OCR) ekle
 pref("extensions.pdfkucult.ocr", true);
+// Kurulu PDF Küçült uygulamasından yeni sürüm çıkınca günde en çok bir kez haber ver (GitHub'a en son sürüm sorulur)
+pref("extensions.pdfkucult.guncellemeKapali", false);

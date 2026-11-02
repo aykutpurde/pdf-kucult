@@ -30,6 +30,8 @@ PDFKucult = {
 	RANK: { az: 0, onerilen: 1, asiri: 2, okuma: 3 },  // eski kayıtlar: daha düşük seviyeler yeniden işlenir
 	PREF_AUTO: "extensions.pdfkucult.autoLevel",
 	PREF_OCR: "extensions.pdfkucult.ocr",
+	PREF_UPD_OFF: "extensions.pdfkucult.guncellemeKapali",   // "Bir daha sorma"
+	PREF_UPD_LAST: "extensions.pdfkucult.guncellemeSon",     // son denetim (Unix saniye, metin)
 
 	// ------------------------------------------------------------ kurulum
 
@@ -47,6 +49,71 @@ PDFKucult = {
 		this.loadRegistry().then(reg => this.buildStatus(reg));
 		this.observerID = Zotero.Notifier.registerObserver(
 			{ notify: (...args) => this.onNotify(...args) }, ["item"], "pdfkucult");
+		// Zotero açılışını yavaşlatmasın: kurulu uygulamanın sürüm denetimi bir dakika sonra
+		Zotero.Promise.delay(60000).then(() => this.checkAppUpdate());
+	},
+
+	// ------------------------------------------------------------ uygulama sürüm bildirimi
+
+	/** Eklenti kendiliğinden güncellenir, PDF'leri küçülten motoru taşıyan uygulama güncellenmez: GitHub'daki en
+	 *  son sürüm kurulu uygulamadan yeniyse haber verir. Günde en çok bir kez; "Bir daha sorma" kalıcıdır.
+	 *  Uygulamaya sürümü motor kipinden sorulur ("--motor --surum"): 1.8.3'ten eski uygulamalar bunu tanımaz,
+	 *  pencere açmadan hata verir; o zaman uygulama eski sayılır. Geliştirme ortamında (kur.sh) denetlenmez. */
+	async checkAppUpdate() {
+		try {
+			let simdi = Math.floor(Date.now() / 1000);
+			if (this.cancelled || Zotero.Prefs.get(this.PREF_UPD_OFF, true)
+					|| simdi - Number(Zotero.Prefs.get(this.PREF_UPD_LAST, true) || 0) < 86400) {
+				return;
+			}
+			let eng = await this.engine();
+			if (!eng || eng.prefix[0] != "--motor") {
+				return;
+			}
+			// penceresiz Windows uygulamasında çıktı kaybolabilir: sürüm dosyaya da yazdırılır
+			let dosya = PathUtils.join(PathUtils.tempDir, "pdfkucult-surum.txt");
+			await IOUtils.remove(dosya, { ignoreAbsent: true });
+			await this.exec(["--surum", "--dosya", dosya]);
+			let kurulu = (await IOUtils.exists(dosya)) ? (await IOUtils.readUTF8(dosya)).trim() : "";
+			await IOUtils.remove(dosya, { ignoreAbsent: true });
+			kurulu = /^\d+(\.\d+)*$/.test(kurulu) ? kurulu : null;
+			let x = await Zotero.HTTP.request("GET", "https://api.github.com/repos/aykutpurde/pdf-kucult/releases/latest",
+				{ responseType: "json", timeout: 15000, headers: { Accept: "application/vnd.github+json" } });
+			Zotero.Prefs.set(this.PREF_UPD_LAST, String(simdi), true);
+			let son = String(x.response?.tag_name || "").replace(/^v/i, "");
+			let parca = (v) => v.split(".").map(Number);
+			let yeniMi = (a, b) => {
+				let [p, q] = [parca(a), parca(b)];
+				for (let i = 0; i < Math.max(p.length, q.length); i++) {
+					if ((p[i] || 0) != (q[i] || 0)) {
+						return (p[i] || 0) > (q[i] || 0);
+					}
+				}
+				return false;
+			};
+			if (!/^\d+(\.\d+)*$/.test(son) || (kurulu && !yeniMi(son, kurulu)) || this.cancelled) {
+				return;
+			}
+			let win = Zotero.getMainWindow();
+			let ps = Services.prompt;
+			let flags = ps.BUTTON_POS_0 * ps.BUTTON_TITLE_IS_STRING + ps.BUTTON_POS_1 * ps.BUTTON_TITLE_IS_STRING
+				+ ps.BUTTON_POS_2 * ps.BUTTON_TITLE_IS_STRING + ps.BUTTON_POS_0_DEFAULT;
+			let choice = ps.confirmEx(win, "PDF Küçült — yeni sürüm",
+				`PDF Küçült uygulamasının ${son} sürümü çıktı (kurulu sürüm: ${kurulu || "daha eski"}).\n\n`
+				+ "Zotero eklentisi kendiliğinden güncellenir; PDF'leri küçülten motor ise uygulamanın içindedir. "
+				+ (Zotero.isWin ? "İndirme sayfasından PDF-Kucult-Kurulum.exe dosyasını indirip çalıştırın; eskisinin üzerine kurulur."
+					: "İndirme sayfasından PDF-Kucult-Mac.dmg dosyasını indirip uygulamayı Uygulamalar klasöründekiyle değiştirin."),
+				flags, "İndirme sayfasını aç", "Sonra", "Bir daha sorma", null, {});
+			if (choice == 0) {
+				Zotero.launchURL("https://github.com/aykutpurde/pdf-kucult/releases/latest");
+			}
+			else if (choice == 2) {
+				Zotero.Prefs.set(this.PREF_UPD_OFF, true, true);
+			}
+		}
+		catch (e) {
+			Zotero.debug("PDF Küçült: sürüm denetimi yapılamadı: " + e);
+		}
 	},
 
 	// ------------------------------------------------------------ "Küçültme" sütunu

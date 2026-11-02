@@ -21,12 +21,32 @@ on run
 		set picked to choose file with prompt "Küçültülecek PDF dosyalarını seçin:" of type {"com.adobe.pdf"} with multiple selections allowed
 	end if
 	processItems(picked)
+	checkForUpdate()
 end run
 
 on open droppedItems
 	clearQuarantine()
 	processItems(droppedItems)
+	checkForUpdate()
 end open
+
+-- Yeni sürüm bildirimi: işlem bittikten sonra, günde en çok bir kez (motor GitHub'a en son sürümü sorar)
+on checkForUpdate()
+	try
+		set eng to POSIX path of (path to me) & "Contents/Resources/motor/" & (do shell script "uname -m") & "/pdfkucult"
+		set info to do shell script "e=" & quoted form of eng & "; [ -x \"$e\" ] && \"$e\" --guncelleme --metin 2>/dev/null; true"
+		if info is "" then return
+		set AppleScript's text item delimiters to tab
+		set parts to text items of info
+		set AppleScript's text item delimiters to ""
+		set btn to button returned of (display dialog "PDF Küçült " & (item 1 of parts) & " çıktı (kurulu sürüm: " & (item 2 of parts) & ")." & return & return & "İndirme sayfasından PDF-Kucult-Mac.dmg dosyasını indirip uygulamayı Uygulamalar klasöründekiyle değiştirin. Zotero eklentisi kendiliğinden güncellenir." with title "PDF Küçült — yeni sürüm" buttons {"Bir daha sorma", "Sonra", "İndirme sayfasını aç"} default button 3)
+		if btn is "İndirme sayfasını aç" then
+			open location (item 3 of parts)
+		else if btn is "Bir daha sorma" then
+			do shell script quoted form of eng & " --guncelleme-kapat"
+		end if
+	end try
+end checkForUpdate
 
 on processItems(theItems)
 	set args to ""

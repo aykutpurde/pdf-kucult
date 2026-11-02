@@ -8,7 +8,9 @@ import os
 import subprocess
 import sys
 import tempfile
+import threading
 import tkinter as tk
+import webbrowser
 from tkinter import filedialog, messagebox, ttk
 
 NO_WINDOW = 0x08000000
@@ -77,6 +79,39 @@ class App:
         for p in human_paths(initial):
             self.listbox.insert("end", p)
         root.protocol("WM_DELETE_WINDOW", self.on_close)
+        root.after(1500, self.check_update)
+
+    # ---- yeni sürüm bildirimi (günde en çok bir kez; ağ arka planda, pencere beklemez)
+    def check_update(self):
+        def work():
+            try:
+                import guncelleme
+                s = guncelleme.denetle()
+            except Exception:
+                return
+            if s.get("goster"):
+                self.root.after(0, lambda: self.show_update(s))
+        threading.Thread(target=work, daemon=True).start()
+
+    def show_update(self, s):
+        dlg = tk.Toplevel(self.root)
+        dlg.title("PDF Küçült — yeni sürüm")
+        dlg.transient(self.root)
+        ttk.Label(dlg, text=f"PDF Küçült {s['yeni']} çıktı (kurulu sürüm: {s['surum']}).\n\n"
+                            "İndirme sayfasından PDF-Kucult-Kurulum.exe dosyasını indirip çalıştırın; "
+                            "yeni sürüm eskisinin üzerine kurulur.",
+                  justify="left", wraplength=420).pack(padx=18, pady=14)
+        row = ttk.Frame(dlg)
+        row.pack(pady=(0, 14))
+
+        def never():
+            import guncelleme
+            guncelleme.kapat()
+            dlg.destroy()
+        ttk.Button(row, text="İndirme sayfasını aç",
+                   command=lambda: (webbrowser.open(s["adres"]), dlg.destroy())).pack(side="left", padx=4)
+        ttk.Button(row, text="Sonra", command=dlg.destroy).pack(side="left", padx=4)
+        ttk.Button(row, text="Bir daha sorma", command=never).pack(side="left", padx=4)
 
     # ---- dosya ekleme
     def add_files(self):
