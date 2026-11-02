@@ -16,6 +16,15 @@ Dosyalar hiçbir sunucuya gönderilmez.
 Kurulum adımları `Kurulum-Rehberi.html` dosyasında. Uygulama Apple/Microsoft imzalı olmadığı için ilk açılışta
 Mac'te "Yine de Aç", Windows'ta "Daha fazla bilgi › Yine de çalıştır" demeniz gerekir.
 
+### Güncelleme
+
+Zotero eklentisi kendiliğinden güncellenir. Mac ve Windows uygulaması ise yeni sürüm çıkınca **haber verir**
+(günde en çok bir kez; Mac'te işlem bittikten sonra, Windows'ta pencere açılınca, Zotero'da eklenti aracılığıyla):
+*İndirme sayfasını aç* deyip yeni sürümü indirin. Windows'ta kurulum dosyasını çalıştırmak yeter (eskisinin üzerine
+kurulur); Mac'te yeni uygulamayı Uygulamalar klasöründekiyle değiştirin. Bu denetim için GitHub'a yalnızca en son
+sürümün numarası sorulur; dosya ya da kişisel bilgi gönderilmez. İstemezseniz bildirimdeki **Bir daha sorma**
+düğmesiyle kapatabilirsiniz.
+
 ## Kullanım
 
 **Uygulama:** `~/Applications/PDF Küçült.app` (Dock'a sürükleyin)

@@ -22,7 +22,7 @@ PYV="$("$PY" -c 'import sys; print(f"{sys.version_info[0]}.{sys.version_info[1]}
 
 cd "$W"
 "$W/venv/bin/pyinstaller" --noconfirm --clean --onedir --console --name pdfkucult \
-    --paths "$HERE" --hidden-import motor \
+    --paths "$HERE" --hidden-import motor --hidden-import guncelleme \
     --collect-submodules fontTools --collect-all pypdfium2 --collect-all pypdfium2_raw \
     --collect-all mozjpeg_lossless_optimization \
     --distpath dist --workpath work --specpath work "$HERE/pdfkucult.py"

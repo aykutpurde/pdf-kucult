@@ -3,6 +3,7 @@
   pdfkucult --motor [motor.py argümanları]   sıkıştırma motoru (Mac uygulaması ve Zotero eklentisi)
   pdfkucult [dosyalar/klasörler]             Windows: pencereli arayüz (simgeye bırakılanlar listede)
   pdfkucult --oz-test                        paketin çalıştığını doğrular (CI)
+  pdfkucult --surum | --guncelleme [--metin] | --guncelleme-kapat   yeni sürüm denetimi (guncelleme.py)
 """
 import multiprocessing
 import os
@@ -21,6 +22,8 @@ def main():
             except Exception:
                 pass
     args = sys.argv[1:]
+    if args[:1] == ["--motor"] and args[1:2] in (["--surum"], ["--guncelleme"], ["--guncelleme-kapat"]):
+        args = args[1:]   # Zotero eklentisi motor kipinden sorar: eski sürümler bunu tanımaz, pencere açmadan hata verir
     if args[:1] == ["--motor"]:
         import motor
         try:
@@ -29,6 +32,9 @@ def main():
             import traceback
             traceback.print_exc()
             return 1
+    if args[:1] in (["--surum"], ["--guncelleme"], ["--guncelleme-kapat"]):
+        import guncelleme
+        return guncelleme.main(args)
     if args[:1] == ["--oz-test"]:
         return self_test()
     if sys.platform == "win32":

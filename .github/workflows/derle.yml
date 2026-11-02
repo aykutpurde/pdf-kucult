@@ -22,6 +22,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Sürüm denetimi testleri
+        run: python testler/guncelleme_test.py
       - name: Homebrew araçları
         run: brew install jbig2enc jpeg-turbo tesseract
       - name: Motoru paketle
@@ -32,6 +34,11 @@ jobs:
           python testler/ornek_uret.py ornekler
           env -i HOME="$HOME" PATH=/usr/bin:/bin TMPDIR="$RUNNER_TEMP" "$(which python)" testler/calistir.py \
             "$OUT/${{ matrix.arch }}/dist/pdfkucult/pdfkucult" --motor -- ornekler test-cikti
+      - name: Paketlenmiş motor sürümünü bildiriyor
+        run: |
+          ver=$(python -c "import json; print(json.load(open('zotero-eklenti/manifest.json'))['version'])")
+          got=$("$OUT/${{ matrix.arch }}/dist/pdfkucult/pdfkucult" --motor --surum)
+          [ "$got" = "$ver" ] || { echo "motor sürümü '$got', beklenen $ver"; exit 1; }
       - name: Motoru sakla
         run: tar -C "$OUT/${{ matrix.arch }}/dist" -czf motor-mac-${{ matrix.arch }}.tgz pdfkucult
       - uses: actions/upload-artifact@v4
@@ -63,6 +70,7 @@ jobs:
       - name: Kurulum dosyası (Inno Setup)
         shell: pwsh
         run: |
+          $env:SURUM = (Get-Content zotero-eklenti/manifest.json -Raw | ConvertFrom-Json).version
           if (-not (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" paketleme\kurulum.iss
           if ($LASTEXITCODE -ne 0) { throw "ISCC başarısız" }
@@ -83,6 +91,12 @@ jobs:
             if (-not $pr.WaitForExit(20000)) { $pr.Kill(); throw "$t takıldı (eksik DLL?)" }
             Write-Host "$t çalışıyor (çıkış $($pr.ExitCode))"
           }
+          $ver = (Get-Content zotero-eklenti/manifest.json -Raw | ConvertFrom-Json).version
+          $sf = Join-Path $env:RUNNER_TEMP "surum.txt"
+          $pr = Start-Process -FilePath $exe -ArgumentList "--motor","--surum","--dosya",$sf -Wait -PassThru
+          if (-not (Test-Path $sf) -or (Get-Content $sf -Raw).Trim() -ne $ver) { throw "kurulu program sürümü bildirmiyor (beklenen $ver)" }
+          python testler/guncelleme_test.py
+          if ($LASTEXITCODE -ne 0) { throw "sürüm denetimi testleri başarısız" }
           python -m pip install -q -r paketleme/gereksinimler.txt
           python testler/ornek_uret.py ornekler
           python testler/calistir.py $exe --motor -- ornekler test-cikti

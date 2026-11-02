@@ -13,7 +13,7 @@ python -m venv venv
 
 .\venv\Scripts\pyinstaller --noconfirm --clean --onedir --windowed --disable-windowed-traceback --name "PDF Kucult" `
     --icon (Join-Path $out "simge.ico") --add-data "$(Join-Path $out 'simge.ico');." `
-    --paths $here --hidden-import motor --hidden-import gui_win `
+    --paths $here --hidden-import motor --hidden-import gui_win --hidden-import guncelleme `
     --collect-submodules fontTools --collect-all pypdfium2 --collect-all pypdfium2_raw --collect-all tkinterdnd2 --collect-all mozjpeg_lossless_optimization `
     --distpath dist --workpath work --specpath work (Join-Path $here "pdfkucult.py")
 if ($LASTEXITCODE -ne 0) { throw "pyinstaller başarısız" }
