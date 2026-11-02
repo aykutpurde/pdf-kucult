@@ -9,7 +9,9 @@ Dosyalar hiçbir sunucuya gönderilmez.
 
 - **Mac** (M serisi ve Intel): `PDF-Kucult-Mac.dmg`
 - **Windows**: `PDF-Kucult-Kurulum.exe`
-- **Zotero 7 eklentisi**: `pdf-kucult-zotero.xpi` (bir kez kurulduktan sonra kendiliğinden güncellenir)
+- **Zotero eklentisi** (Zotero 7 ve sonrası): `pdf-kucult-zotero.xpi` (bir kez kurulduktan sonra kendiliğinden
+  güncellenir). **Eklenti tek başına çalışmaz:** küçültmeyi Mac ya da Windows uygulamasının içindeki motorla yapar.
+  Önce yukarıdaki uygulamayı kurup bir kez açın, sonra eklentiyi kurun.
 
 Kurulum adımları `Kurulum-Rehberi.html` dosyasında. Uygulama Apple/Microsoft imzalı olmadığı için ilk açılışta
 Mac'te "Yine de Aç", Windows'ta "Daha fazla bilgi › Yine de çalıştır" demeniz gerekir.
@@ -28,17 +30,19 @@ Mac'te "Yine de Aç", Windows'ta "Daha fazla bilgi › Yine de çalıştır" dem
 
 ## Zotero eklentisi
 
-**Kurulum:** Zotero › Tools › Plugins › ⚙ › *Install Plugin From File…* → `PDF Küçült Zotero.xpi`
+**Kurulum:** Önce PDF Küçült uygulamasını (Mac `.dmg` ya da Windows `.exe`) kurun ve bir kez açın; eklenti
+küçültmeyi bu uygulamanın motoruyla yapar, uygulama yoksa çalışmaz. Sonra Zotero › Tools › Plugins › ⚙ ›
+*Install Plugin From File…* → `pdf-kucult-zotero.xpi`
 
 **Kullanım:**
 - **Seçili öğeler:** Öğelere sağ tıklayın › **Akıllı sıkıştır (PDF Küçült)**. Makale öğesi seçerseniz altındaki PDF ekleri işlenir.
 - **Bütün kütüphane:** Tools › PDF Küçült › *Seçili kütüphanedeki tüm PDF'leri akıllı sıkıştır*. Onay ister; en büyük dosyalardan başlar.
-- **Otomatik:** Tools › PDF Küçült › *Yeni eklenen PDF'leri otomatik akıllı sıkıştır*. "Find Available PDF" veya sürükle-bırak ile gelen her PDF eklendikten birkaç saniye sonra küçültülür. Varsayılan olarak açık.
+- **Otomatik:** Tools › PDF Küçült › *Yeni eklenen PDF'leri otomatik akıllı sıkıştır*. "Find Available PDF" veya sürükle-bırak ile gelen her PDF eklendikten birkaç saniye sonra küçültülür. Varsayılan olarak **kapalı**; bu menüden açılır.
 - **KB/sayfa sütunu:** Öğe listesinde sütun başlığına sağ tıklayıp *KB/sayfa*'yı açın. Her PDF'in sayfa başına boyutu görünür; 150 KB'ın üstü ⚠ ile işaretlenir ve incelemeye değer (siyah-beyaz taramada normal 15–100 KB, dijital metinde 5–80 KB). Sütuna tıklayarak en şişkin dosyaları üste sıralayabilirsiniz. Sayfa sayısı Zotero'nun tam metin dizininden okunur; dizinlenmemiş PDF'lerde boş kalır.
 
 **Nasıl çalışır:**
 - Dosya yerinde değiştirilir. Zotero öğesi, notlar, PDF üzerindeki vurgular/açıklamalar ve etiketler aynen kalır.
-- Büyük orijinal macOS **Çöp Kutusu'na** taşınır. Adı `… (orijinal, Zotero ANAHTAR).pdf` olur; oradan geri alınabilir.
+- Büyük orijinal **Çöp Kutusu'na** (Windows'ta Geri Dönüşüm Kutusu'na) taşınır. Adı `… (orijinal, Zotero ANAHTAR).pdf` olur; oradan geri alınabilir.
 - Dosya yeni tarihle yazılır, böylece Zotero senkronizasyonu küçük dosyayı buluta yükler.
 - Daha önce küçültülen dosyalar tekrar işlenmez. Kayıt yeri: `~/Zotero/pdfkucult.json`
 - İşlem kaydı Tools › PDF Küçült › *İşlem kaydını aç* ile görülebilir. Kayıt yeri: `~/Library/Logs/PDFKucult/zotero.log`
